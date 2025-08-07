@@ -46,11 +46,11 @@ public:
 
         // load entity
         Entity* ogreEntity = sceneMgr->createEntity("ogrehead.mesh");
-        SceneNode* ogreNode = sceneMgr->getRootSceneNode()->createChildSceneNode("head");
+        ogreNode = sceneMgr->getRootSceneNode()->createChildSceneNode("head");
         ogreNode->attachObject(ogreEntity);
         ogreNode->setScale(1.0f, 1.0f, 1.0f);  // 可调节大小
 
-        // 打光
+        // light
         sceneMgr->setAmbientLight(ColourValue(0.3f, 0.3f, 0.3f));
         Light* light = sceneMgr->createLight("MainLight");
         SceneNode* lightNode = sceneMgr->getRootSceneNode()->createChildSceneNode("light");
@@ -71,6 +71,73 @@ public:
         }
         return true;
     }
+
+    // 鼠标按下
+    bool mousePressed(const MouseButtonEvent& evt) override {
+        if (evt.button == BUTTON_LEFT) {
+            rotating = true;
+            lastMouseX = evt.x;
+            lastMouseY = evt.y;
+        }
+        return true;
+    }
+
+    // 鼠标释放
+    bool mouseReleased(const MouseButtonEvent& evt) override {
+        if (evt.button == BUTTON_LEFT) {
+            rotating = false;
+        }
+        return true;
+    }
+
+    // 鼠标移动
+    bool mouseMoved(const MouseMotionEvent& evt) override {
+        if (rotating && ogreNode) {
+            int dx = evt.x - lastMouseX;
+            int dy = evt.y - lastMouseY;
+
+            Radian angleX = Degree(-0.2f * dx); // 鼠标 X → Yaw
+            Radian angleY = Degree(-0.2f * dy); // 鼠标 Y → Pitch
+
+            ogreNode->yaw(angleX, Node::TS_LOCAL);
+            ogreNode->pitch(angleY, Node::TS_LOCAL);
+
+            lastMouseX = evt.x;
+            lastMouseY = evt.y;
+        }
+        return true;
+    }
+
+    bool mouseWheelRolled(const MouseWheelEvent& evt) override {
+        if (!ogreNode) return true;
+
+        // 每次滚动单位的缩放比例（根据实际设备可能需要调整）
+        float scaleStep = 0.1f; // 缩放步长
+
+        // 正值表示向上滚（放大），负值表示向下滚（缩小）
+        float direction = evt.y;
+
+        Vector3 currentScale = ogreNode->getScale();
+        float newScaleFactor = 1.0f + scaleStep * direction;
+
+        // 限制最小/最大缩放
+        float minScale = 0.05f;
+        float maxScale = 10.0f;
+
+        Vector3 newScale = currentScale * newScaleFactor;
+
+        if (newScale.x >= minScale && newScale.x <= maxScale) {
+            ogreNode->setScale(newScale);
+        }
+
+        return true;
+    }
+
+private:
+    SceneNode* ogreNode = nullptr;
+    bool rotating = false;
+    int lastMouseX = 0;
+    int lastMouseY = 0;
 };
 
 int main() {
