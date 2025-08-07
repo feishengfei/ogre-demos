@@ -25,6 +25,7 @@ set(SOURCE_FILES
     src/listing4-4__intercepting_ogre_logging.cpp
     src/listing4-5__create_render_window.cpp
     src/listing4-5__create_render_window__closable.cpp
+    src/listing4-6__load_mesh_demo.cpp
 )
 
 macro(create_target target_name source_file)
